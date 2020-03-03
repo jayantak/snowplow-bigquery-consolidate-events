@@ -1,0 +1,28 @@
+{% for context in contexts -%}
+{%- if loop.first -%}
+CREATE OR REPLACE VIEW `{{ bigquery.project }}.{{ bigquery.dataset_id }}.consolidated_{{ bigquery.table_id }}` AS (
+SELECT
+{% for field in root_fields -%}
+{{ field }},
+{% endfor %}
+{%- endif %}
+    ARRAY_CONCAT(
+        {% for version in context.versions -%}
+            ARRAY(
+                SELECT AS STRUCT
+                {% for field in context.super -%}
+                {{ field.name if (field.name in version.field_names) else 'CAST(NULL AS '+ field.field_type + ') AS ' + field.name }}
+                {%- if not loop.last -%},{%- endif %}
+                {% endfor %}
+                FROM
+                    UNNEST(e.{{ version.name }})
+            )
+            {%- if not loop.last -%},{%- endif %}
+        {% endfor %}
+    ) {{ context.name }}
+{%- if not loop.last -%},{%- endif %}
+{%- if loop.last %}
+FROM
+    `{{ bigquery.project }}.{{ bigquery.dataset_id }}.{{ bigquery.table_id }}` e )
+{% endif %}
+{% endfor %}
