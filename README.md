@@ -6,7 +6,7 @@ First build the docker image by running
 
 Then create a folder called `secrets`, with a json file called `service-account.json` with the service account json from the respective google cloud project which has access to describe the  snowplow events bigquery table
 
-	docker run -v secrets:/secrets/v1 snowplow-bigquery-consolidate-events \
+	docker run -v secrets:/secrets snowplow-bigquery-consolidate-events \
 	-p project \
 	-d rt_pipeline_prod1 \
 	-t events \
