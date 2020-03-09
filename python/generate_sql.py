@@ -7,7 +7,7 @@ import argparse
 import os
 
 
-client =  bigquery.Client.from_service_account_json('/secrets/v1/service-account.json')
+client =  bigquery.Client.from_service_account_json('/secrets/service-account.json')
 
 class Field:
 
