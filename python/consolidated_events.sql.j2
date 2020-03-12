@@ -6,6 +6,8 @@ SELECT
 {{ field }},
 {% endfor %}
 {%- endif %}
+
+{%- if context.is_context_array -%}
     ARRAY_CONCAT(
         {% for version in context.versions -%}
             ARRAY(
@@ -19,6 +21,24 @@ SELECT
             )
             {%- if not loop.last -%},{%- endif %}
         {% endfor %}
+
+{%- else -%}
+    STRUCT(
+        {% for field in context.super -%}
+
+            COALESCE({% for version in context.versions -%}
+
+                    {%- if field.name in version.field_names -%}
+                            e.{{ version.name }}.{{ field.name }}
+                    {%- else -%}
+                            CAST(NULL AS {{field.field_type}})
+                    {%- endif -%}
+
+            {%- if not loop.last -%},{%- endif %}
+            {%- endfor -%}) AS {{ field.name }}
+            {%- if not loop.last -%},{%- endif %}
+        {% endfor %}
+{%- endif -%}
     ) {{ context.name }}
 {%- if not loop.last -%},{%- endif %}
 {%- if loop.last %}
